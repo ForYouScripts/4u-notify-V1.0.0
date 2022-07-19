@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>4u-notify</title>
+    <link rel="stylesheet" href="../assets/css/app.css">
+    <script src="https://kit.fontawesome.com/7b4de4d75c.js" crossorigin="anonymous"></script>
+</head>
+    
+<div id="app" v-if="nui"> 
+    <div class="notif-container">
+        <!-- <div class="notify-main info">
+            <div class="notify-line"></div>
+            <div class="notify-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="notify-header">Notification;</div>
+            <div class="notify-text">Yaptığınız işlem gerçekleştirilemedi </div>
+        </div> -->
+    </div>
+</div>
+<audio id="mySound" style="display: none;" src="./assets/sounds/notifysound.ogg"></audio>
+
+</div>
+<script src="./vue.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+<script>
+
+const app = new Vue({
+    el: '#app',
+    data: {
+        nui:true,
+        persistentNotifs:{},
+        Sound: true,
+    },
+    methods: {
+        CreateNotification(data) {
+            var $notification = $(document.createElement('div'));
+            $notification.addClass('notify-main').addClass(data.type);
+            if(data.type == "primary") {
+                $notification.html('<div class="notify-line" style="background-color:rgb(54, 139, 218, 0.9);"></div> <div class="notify-icon"><i class="fa-solid fa-triangle-exclamation"></i></div> <div class="notify-header">Notification;</div> <div class="notify-text">'+data.text+'</div>');
+            } else if (data.type == "error") {
+                $notification.html('<div class="notify-line" style="background-color:rgb(222, 49, 66, 0.9);"></div> <div class="notify-icon"><i class="fa-solid fa-circle-xmark"></i></div> <div class="notify-header">Notification;</div> <div class="notify-text">'+data.text+'</div>');
+            } else if (data.type == "success") {
+                $notification.html('<div class="notify-line" style="background-color:rgb(54, 218, 92, 0.9);"></div> <div class="notify-icon"><i class="fa-solid fa-circle-check"></i></div> <div class="notify-header">Notification;</div> <div class="notify-text">'+data.text+'</div>');
+            }
+            if(this.Sound) {
+                document.getElementById('mySound').play();
+            }
+            $notification.fadeIn(0);
+            if (data.style !== undefined) {
+                Object.keys(data.style).forEach(function(css) {
+                 $notification.css(css, data.style[css])
+                });
+            }
+
+            return $notification;
+        },
+        ShowNotif(data) {
+            if (data.persist === undefined) {
+                var $notification = this.CreateNotification(data);
+                $('.notif-container').append($notification);
+                setTimeout(function() {
+                    $notification.addClass('animateman');
+                    setTimeout(() => {
+                        $.when($notification.fadeOut()).done(function() {
+                            $notification.remove()
+                        });
+                    }, 500);
+                }, data.length != null ? data.length : 2500);
+            }
+        }
+    },
+})
+
+window.addEventListener('message', function(event) {
+    let data = event.data;
+         
+    if (data.nui == "true"){
+        app.ShowNotif(data.data)
+    }
+    if (data.nui == "sound"){
+        app.Sound = data.sound
+    }
+})
+
+</script>
+</body>
+</html>
